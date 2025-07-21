@@ -12,21 +12,27 @@ import { app, server } from "./lib/socket.js";
 dotenv.config();
 
 const PORT = process.env.PORT || 5001;
-
 const __dirname = path.resolve();
 
-app.use(express.json());
-app.use(cookieParser());
+// ✅ CORS configuration: local + deployed frontend
 app.use(
   cors({
-    origin: "http://localhost:5173",
+    origin: [
+      "http://localhost:5173", // local dev
+      "https://fullstack-chat-frontend-theta.vercel.app", // deployed frontend
+    ],
     credentials: true,
   })
 );
 
+app.use(express.json());
+app.use(cookieParser());
+
+// ✅ API routes
 app.use("/api/auth", authRoutes);
 app.use("/api/messages", messageRoutes);
 
+// ✅ Serve frontend in production
 if (process.env.NODE_ENV === "production") {
   app.use(express.static(path.join(__dirname, "../frontend/dist")));
 
@@ -35,7 +41,8 @@ if (process.env.NODE_ENV === "production") {
   });
 }
 
+// ✅ Start server
 server.listen(PORT, () => {
-  console.log("server is running on PORT:" + PORT);
+  console.log("Server is running on PORT:" + PORT);
   connectDB();
 });
